@@ -8,9 +8,9 @@ Encore
     // directory where compiled assets will be stored
     .setOutputPath('static/build/')
     // public path used by the web server to access the output path
-    .setPublicPath('/static/build')
+    .setPublicPath('/local/templates/dev_tpl/static/build')
     // only needed for CDN's or sub-directory deploy
-    //.setManifestKeyPrefix('build/')
+    .setManifestKeyPrefix('local/templates/dev_tpl/static/build')
 
     /*
      * ENTRY CONFIG
@@ -24,7 +24,7 @@ Encore
     // .enableStimulusBridge('./assets/controllers.json')
 
     // When enabled, Webpack "splits" your files into smaller pieces for greater optimization.
-    .splitEntryChunks()
+    // .splitEntryChunks()
 
     // will require an extra script tag for runtime.js
     // but, you probably want this, unless you're building a single-page app

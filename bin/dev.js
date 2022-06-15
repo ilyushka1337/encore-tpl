@@ -1,7 +1,7 @@
 const webpack = require('webpack')
 const fs = require('fs')
 const config = require('../webpack.config')
-const { startWatch, deploy } = require('./assets')
+const { watchForDeploy, deploy, watchAssets } = require('./assets')
 
 const compilerCallback = (err, stats) => {
     if (err){
@@ -9,14 +9,15 @@ const compilerCallback = (err, stats) => {
         return
     }
 }
-const mode = process.env.NODE_ENV || 'development'
-const isDev = mode === 'development'
+const mode = process.env.NODE_ENV || 'dev'
+const isDev = mode === 'dev'
 const compiler = webpack(config)
 
 isDev ? dev() : prod()
 
 function dev(){
-    startWatch()
+    watchForDeploy()
+    watchAssets()
     compiler.watch(
         {
             ignored: ['**/static', '**/src/images', '**/node_modules']
@@ -27,4 +28,5 @@ function dev(){
 
 function prod(){
     compiler.run(compilerCallback)
+    deploy()
 }
