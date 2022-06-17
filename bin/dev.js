@@ -27,6 +27,12 @@ function dev(){
 }
 
 function prod(){
-    compiler.run(compilerCallback)
-    deploy()
+    compiler.run((err, stats) => {
+        if (err){
+            console.log(err)
+            return
+        }
+        
+        deploy()
+    })
 }

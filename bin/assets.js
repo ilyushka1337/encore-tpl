@@ -5,6 +5,7 @@ const _ = require('lodash');
 const { deploy, excludeDefaults } = require("@samkirkland/ftp-deploy");
 const svgstore = require('svgstore')
 const svgo = require('svgo');
+const sharp = require('sharp');
 
 const ftpConfig = JSON.parse( fs.readFileSync( path.resolve(__dirname, '../ftp-config.json') ) )
 
@@ -115,11 +116,9 @@ async function watchAssets(){
         persistent: true,
         encoding: 'utf8'
     })
-    console.log('watch started')
     for await(const event of watcher){
         if (excludeFiles.includes(event.filename))
             return
-
 
         switch (getAssetType(event.filename)){
             case 'svg':
@@ -127,8 +126,53 @@ async function watchAssets(){
                 staticSvgSprite()
                 break;
             case 'image':
+                imageMin()
                 break;
         }
+    }
+}
+
+async function optimizeJpeg(file){
+    return await sharp(file)
+        .jpeg({
+            mozjpeg: true,
+            quality: 80
+        })
+}
+async function optimizePNG(file){
+    return await sharp(file)
+        .png({
+            quality: 80,
+        })
+}
+
+async function imageMin(){
+    const imgsDir = path.resolve(__dirname, '../src/images/')
+    const files = await fsPromises.readdir(imgsDir)
+    const imgs = files.filter(file => {
+        const found = file.match(/.+\.(png|jpg|jpeg)/i)
+        return found !== null 
+    })
+    if (imgs.length === 0)
+        return false
+
+    const outDir = path.resolve(__dirname, '../static/images/')
+    for (const img of imgs){
+        const split = img.split('.')
+        const ext = split[1]
+        const format = ext === 'png' ? 'png' : 'jpeg'
+        const file = await fsPromises.readFile(path.resolve(imgsDir, img))
+        
+        let optimized
+        switch (format){
+            case 'jpeg':
+                optimized = await optimizeJpeg(file)
+                break;
+            case 'png':
+                optimized = await optimizePNG(file)
+                break;
+        }
+        optimized.toFile(`${outDir}/${img}`)
     }
 }
 

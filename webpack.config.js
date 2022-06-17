@@ -4,13 +4,15 @@ if (!Encore.isRuntimeEnvironmentConfigured()) {
     Encore.configureRuntimeEnvironment(process.env.NODE_ENV || 'dev');
 }
 
+const staticPath = 'local/templates/dev_tpl/static'
+
 Encore
     // directory where compiled assets will be stored
     .setOutputPath('static/build/')
     // public path used by the web server to access the output path
-    .setPublicPath('/local/templates/dev_tpl/static/build')
+    .setPublicPath(`/${staticPath}/build`)
     // only needed for CDN's or sub-directory deploy
-    .setManifestKeyPrefix('local/templates/dev_tpl/static/build')
+    .setManifestKeyPrefix(`${staticPath}/build`)
 
     /*
      * ENTRY CONFIG
@@ -54,9 +56,24 @@ Encore
         config.corejs = 3;
     })
 
+    .configureImageRule({
+        enabled: false
+    })
+
     .enableSassLoader()
 ;
 
 const config = Encore.getWebpackConfig()
+config.module.rules.push({
+    test: /\.(png|jpg|jpeg)$/i,
+    type: 'asset/resource',
+    generator: {
+        emit: false,
+        filename: '[name][ext]',
+        outputPath: '../images/',
+        publicPath: `/${staticPath}/images/`
+    }
+})
+config.output.chunkFilename = '[name].[hash:8].ext'
 
 module.exports = config;
